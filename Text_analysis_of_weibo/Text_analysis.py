@@ -126,3 +126,4 @@ def get_sent(df):
     t_words, t_rdf = pre_data.seg_str()
     a = pre_data.sentiment()[0]
     return a, t_words, t_rdf
+
