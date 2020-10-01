@@ -15,4 +15,4 @@ It can scrape the posts from weibo.cn. It will give you as many posts as possibl
 * i. I don't have time to build a modle using the data, so I used the sentiment dictionary from BosonNLP sentiment scores, it is generated from weibo and news release, so I think it could be applicable.
 * ii. Due to the limited time, and I really wish to end this temporately for my two coming deadlines, I choose to suppose that the negative words and adverbs before a sentiment word is to modify the sentiment word, and the sentiment od the sentence is the summed up scores of each sentimentwords mutiply the modifying negative words and adverbs before them.
 
-###### *Note: this analysis is very slapdash, and I only upload these codes to record my learning process of python. And if this property in any ways invade other's rights, please contact me.*
+###### *Note: this analysis is very slapdash, and I only upload these codes to record my learning process of python. And if this property in any ways invades your rights, please contact me.*
