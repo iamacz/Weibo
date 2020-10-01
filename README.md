@@ -1,7 +1,7 @@
 # SentimentAnalysisofWeibo
-I used the sentiment dictionary to predict the sentiment of post scraped from weibo.cn, here we will have the 
+I used the sentiment dictionary to predict the sentiment of post scraped from weibo.cn, here we will have the following contents.
 
-## Content:
+## Contents:
 ### 1. a weibo spider:
 It can scrape the posts from weibo.cn. It will give you as many posts as possible that is related to the kwyword during the period(from starttime to end time)
 ### 2. a slapdash sentiment analysis:
