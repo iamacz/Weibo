@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # By：Tangbin Chen
 # Create：2019-12-25
-# Update：2020-01-01
+# Update：2020-10-22
 # For: Analyse data from weibo using a simple and not so rigours sentiment analysis based on sentiment dictionary
 
 
@@ -11,15 +11,18 @@ from wordcloud import WordCloud
 
 
 class SegPost:
-    def __init__(self, df, userdict='mydict.txt', stopwords='哈工大停用词表.txt'):
+    def __init__(self, df, get_sent = False, userdict='mydict.txt', stopwords='哈工大停用词表.txt'):
         self.df = self.clean_data(df)
         self.userdict = userdict
         self.stopwords = [line.strip() for line in open(f'.//dict/{stopwords}', 'r', encoding = 'utf-8').readlines()]
         self.words, self.app_seg = self.seg_str()
+        self.app_sa, self.post_score = self.sentiment() if get_sent else None, None
+
+    def get_sent(self):
         self.app_sa, self.post_score = self.sentiment()
 
     def clean_data(self, df):
-        # load data and cleanse data, we will have a data set without duplicated posts or none values
+        # load data and clean data, we will have a data set without duplicated posts or null/nan
         df = df[-pd.isna(df['post'])]
         df = df[df['post'] != '转发微博']
         df = df.drop_duplicates(subset=['post'])
@@ -73,10 +76,10 @@ class SegPost:
         # w.to_file('output3.png')
         a = '//'.join(self.words)
         w2 = w.generate(a)
-        w2.to_file(f'{name}.png')
+        w2.to_file(f'./wordcloud/{name}.png')
         return (w2)
 
-    def sentiment(self, add_seg = True):
+    def sentiment(self, add_seg = False,use_weight=False):
         import pandas as pd
         import numpy as np
         sent_dict = pd.read_csv('.//dict/BosonNLP_sentiment_score.txt', encoding="utf-8", sep='\s', engine='python')
@@ -85,33 +88,34 @@ class SegPost:
         # iterate in the seg list which contains all the posts
         import time
         post_score = []
-        print('LOOP STARTS'.center(100 // 2, '='))
+        print('    Sentimental Analysis    '.center(100 // 2, '='))
         start = time.perf_counter()
         j = 0
         for i in self.app_seg.index:
             # iterate within one post
-            weight = []
             score = []
             for word in self.app_seg['seg_post'][i]:
                 s_sent = sent_dict[sent_dict['word'] == word]['score']
-                s_neg = -1 if word in neg_dict else 1
-                s_adv = adv_dict[adv_dict['word'] == word]['score'].values[0] if word in set(adv_dict['word']) else 1
                 if s_sent.any():
-                    w = np.prod(weight) * s_sent.values[0]
-                    score += [w]
-                    weight = []
-                else:
-                    weight += [s_neg, s_adv]
+                    if s_sent.mean() > 0:
+                        score += [1]
+                    elif s_sent.mean() == 0:
+                        score += [0]
+                    elif s_sent.mean() < 0:
+                        score += [-1]
             if score:
                 post_score.append(sum(score))
             else:
                 post_score.append(0)
             j += 1
-            a = "*" * int(j / int(len(self.app_seg.index)/50))
-            b = '.' * (50 - int(j / int(len(self.app_seg.index)/50)))
+            a = "*" * int(50 * j / len(self.app_seg.index))
+            b = '.' * int(50 * (1 - (j / len(self.app_seg.index))))
             c = j / len(self.app_seg.index) * 100
             dur = time.perf_counter() - start
-            print('\r{:^3.0f}%[{}->{}]{:.2f}s'.format(c, a, b, dur), end='')
+            left = dur / j * (len(self.app_seg.index) - j) / 60
+            print('\r{:^3.0f}%[{}->{}] Dur: {:.2f}min; Approx {:.2f}min left'.format(c, a, b, dur / 60, left),
+                  end='')
+            # print('\r{:^3.0f}%[{}->{}]{:.2f}s'.format(c, a, b, dur), end='')
         print('\n' + 'End of the Loop'.center(100 // 2, '=')+'\n'+'\n')
         if add_seg:
             org = self.app_seg
@@ -121,9 +125,27 @@ class SegPost:
         return org, post_score
 
 
-def get_sent(df):
-    pre_data = SegPost(df)
-    t_words, t_rdf = pre_data.seg_str()
-    a = pre_data.sentiment()[0]
-    return a, t_words, t_rdf
+'''
+I still wanna use this while giving sentimental score, buuuut, it is not so promising
+I soublt this, so just stay in here a bit
 
+        for i in self.app_seg.index:
+            # iterate within one post
+            weight = []
+            score = []
+            for word in self.app_seg['seg_post'][i]:
+                s_sent = sent_dict[sent_dict['word'] == word]['score']
+                s_neg = -1 if word in neg_dict else 1
+                s_adv = adv_dict[adv_dict['word'] == word]['score'].values[0] if word in set(adv_dict['word']) else 1
+                if use_weight:
+                    if s_sent.any():
+                        w = np.prod(weight) * s_sent.values[0]
+                        score += [w]
+                        weight = []
+                    else:
+                        weight += [s_neg, s_adv]
+                else:
+                    w = s_sent.values[0]
+                    score += [w]
+
+'''
