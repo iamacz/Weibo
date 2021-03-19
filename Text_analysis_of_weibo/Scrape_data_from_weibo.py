@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # By：Tangbin Chen
 # Create：2019-12-23
-# Update：2021-03-29
+# Update：2021-10-20
 # For: Scrape data from weibo and a simple and not so rigours sentiment analysis based on sentiment dictionary
 
 
